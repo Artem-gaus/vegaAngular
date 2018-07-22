@@ -1,5 +1,11 @@
-import { VehicleService } from './../../services/vehicle.service';
 import { Component, OnInit } from '@angular/core';
+import { ToastrService } from 'ngx-toastr';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/forkJoin';
+
+import { VehicleService } from './../../services/vehicle.service';
+
 
 @Component({
   selector: 'app-vehicle-form',
@@ -16,14 +22,51 @@ export class VehicleFormComponent implements OnInit {
   };
 
   constructor(
-    private vehicleService: VehicleService) { }
+    private route: ActivatedRoute,
+    private router: Router,
+    private vehicleService: VehicleService,
+    private toastrService: ToastrService) { 
+
+      route.params.subscribe(p => {
+        this.vehicle.id = +p['id'];
+      });
+    }
 
   ngOnInit() {
-    this.vehicleService.getMakes()
-      .subscribe(makes => this.makes = makes);
+    var sources = [
+      this.vehicleService.getMakes(),
+      this.vehicleService.getFeatures()
+    ];
 
-    this.vehicleService.getFeatures()
-      .subscribe(features => this.features = features);
+    if (this.vehicle.id)
+      sources.push(this.vehicleService.getVehicle(this.vehicle.id));
+
+    Observable.forkJoin(sources).subscribe(data => {
+      this.makes = data[0];
+      this.features = data[1];
+
+      if (this.vehicle.id)
+        this.vehicle = data[2];
+    }, err => {
+      if (err.status == 404)
+        this.router.navigate(['/']);
+    });
+
+    // this.vehicleService.getVehicle(this.vehicle.id)
+    //   .subscribe(v => {
+    //     this.vehicle = v;
+    //   });
+      //FOR CHECK INVALID ID 
+      // , err => {
+      //   if (err.status == 404)
+      //     this.router.navigate(['/']);
+      // }
+
+    // this.vehicleService.getMakes()
+    //   .subscribe(makes => this.makes = makes);
+
+    // this.vehicleService.getFeatures()
+    //   .subscribe(features => this.features = features);
   }
 
   onMakeChange() {
@@ -43,7 +86,12 @@ export class VehicleFormComponent implements OnInit {
 
   submit() {
     this.vehicleService.create(this.vehicle)
-      .subscribe(x => console.log(x));
+      .subscribe(
+        x => console.log(x),
+      err =>{
+        this.toastrService.error('An expected error happened', 'Error', {
+          timeOut: 5000});
+      });
   }
 
 }

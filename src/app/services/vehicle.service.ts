@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Http, Headers } from '@angular/http';
+import { Http } from '@angular/http';
 import { map } from 'rxjs/operators';
 
 @Injectable({
@@ -21,6 +21,11 @@ export class VehicleService {
 
   create(vehicle) {
     return this.http.post('http://localhost:5000/api/vehicles', vehicle)
+      .pipe(map(res => res.json()));
+  }
+
+  getVehicle(id) {
+    return this.http.get('http://localhost:5000/api/vehicles/' + id)
       .pipe(map(res => res.json()));
   }
 }
