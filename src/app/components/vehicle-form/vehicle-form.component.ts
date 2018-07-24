@@ -3,8 +3,11 @@ import { ToastrService } from 'ngx-toastr';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/forkJoin';
+import * as _ from 'underscore';
 
 import { VehicleService } from './../../services/vehicle.service';
+import { SaveVehicle } from '../../models/saveVehicle';
+import { Vehicle } from '../../models/vehicle';
 
 
 @Component({
@@ -16,9 +19,17 @@ export class VehicleFormComponent implements OnInit {
   makes: any[];
   models: any[];
   features: any[];
-  vehicle: any = {
+  vehicle: SaveVehicle = {
+    id: 0,
+    makeId: 0,
+    modelId: 0,
+    isRegistered: false,
     features: [],
-    contact: {}
+    contact: {
+      name: '',
+      phone: '',
+      email: '',
+    }
   };
 
   constructor(
@@ -45,34 +56,34 @@ export class VehicleFormComponent implements OnInit {
       this.makes = data[0];
       this.features = data[1];
 
-      if (this.vehicle.id)
-        this.vehicle = data[2];
+      if (this.vehicle.id) {
+        this.setVehicle(data[2]);
+        this.populateModels();
+      }
     }, err => {
       if (err.status == 404)
         this.router.navigate(['/']);
     });
+  }
 
-    // this.vehicleService.getVehicle(this.vehicle.id)
-    //   .subscribe(v => {
-    //     this.vehicle = v;
-    //   });
-      //FOR CHECK INVALID ID 
-      // , err => {
-      //   if (err.status == 404)
-      //     this.router.navigate(['/']);
-      // }
-
-    // this.vehicleService.getMakes()
-    //   .subscribe(makes => this.makes = makes);
-
-    // this.vehicleService.getFeatures()
-    //   .subscribe(features => this.features = features);
+  private setVehicle(v: Vehicle) {
+    this.vehicle.id = v.id;
+    this.vehicle.makeId = v.make.id;
+    this.vehicle.modelId = v.model.id;
+    this.vehicle.isRegistered = v.isRegistered;
+    this.vehicle.contact = v.contact;
+    this.vehicle.features = _.pluck(v.features, 'id');
   }
 
   onMakeChange() {
+    this.populateModels();
+
+    delete this.vehicle.modelId;
+  }
+
+  private populateModels() {
     var selectedMake = this.makes.find(m => m.id == this.vehicle.makeId);
     this.models = selectedMake ? selectedMake.models : [];
-    delete this.vehicle.modelId;
   }
 
   onFeatureToggle(featureId, $event) {
@@ -84,14 +95,32 @@ export class VehicleFormComponent implements OnInit {
     }
   }
 
+  delete() {
+    if (confirm("Are you sure?")) {
+      this.vehicleService.delete(this.vehicle.id)
+        .subscribe(x => {
+          this.router.navigate(['/']);
+        });
+    }
+  }
+
   submit() {
-    this.vehicleService.create(this.vehicle)
-      .subscribe(
-        x => console.log(x),
-      err =>{
+    if (this.vehicle.id) {
+      this.vehicleService.update(this.vehicle)
+        .subscribe(x => {
+          this.toastrService.success('The vehicle was successfuly updated.', 'Success', {
+            timeOut: 5000
+          });
+        });
+    }
+    else {
+      this.vehicleService.create(this.vehicle)
+      .subscribe( x => console.log(x), 
+      err => {
         this.toastrService.error('An expected error happened', 'Error', {
           timeOut: 5000});
       });
+    }
   }
 
 }
