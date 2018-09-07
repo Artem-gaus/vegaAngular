@@ -11,16 +11,20 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { VehicleService } from './services/vehicle.service';
 import { AppComponent } from './app.component';
 import { VehicleFormComponent } from './components/vehicle-form/vehicle-form.component';
+import { VehicleListComponent } from './components/vehicle-list/vehicle-list.component';
 
 const router: Routes = [
+  { path: '', redirectTo: 'vehicles', pathMatch: 'full' },
   { path:'vehicles/new', component: VehicleFormComponent },
-  { path:'vehicles/:id', component: VehicleFormComponent }
+  { path:'vehicles/:id', component: VehicleFormComponent },
+  { path:'vehicles', component: VehicleListComponent }
 ];
 
 @NgModule({
   declarations: [
     AppComponent,
-    VehicleFormComponent
+    VehicleFormComponent,
+    VehicleListComponent
   ],
   imports: [
     BrowserModule,

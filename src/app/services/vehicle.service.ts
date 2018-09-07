@@ -25,6 +25,11 @@ export class VehicleService {
       .pipe(map(res => res.json()));
   }
 
+  getVehicles() {
+    return this.http.get('http://localhost:5000/api/vehicles')
+      .pipe(map(res => res.json()));
+  }
+
   create(vehicle: SaveVehicle) {
     return this.http.post('http://localhost:5000/api/vehicles', vehicle)
       .pipe(map(res => res.json()));

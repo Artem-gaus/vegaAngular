@@ -11,6 +11,9 @@
         <a class="nav-link" [routerLink]="['']" (click)="menu.hide()">Home <span class="sr-only">(current)</span></a>
       </li>
       <li class="nav-item">
+        <a class="nav-link" [routerLink]="['/vehicles']" (click)="menu.close()">Vehicle List</a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link" [routerLink]="['/vehicles/new']" (click)="menu.close()">New Vehicle</a>
       </li>
       <li class="nav-item">
